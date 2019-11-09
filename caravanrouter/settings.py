@@ -91,10 +91,10 @@ WSGI_APPLICATION = 'caravanrouter.wsgi.application'
 DATABASES = {
     'default': {
         'HOST': 'localhost',
-        'NAME': 'kane_caravanrouter',
+        'NAME': 'caravan',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'kane_caravan',
-        'PASSWORD': 'Tratap60',
+        'USER': 'pije76',
+        'PASSWORD': 'tratap60',
 	    'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -148,32 +148,3 @@ INTERNAL_IPS = ('127.0.0.1',)
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT  = os.path.join(os.path.dirname(BASE_DIR), "media")
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
-    'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/home/kane/public_html/caravanrouter/debug.log',
-        },
-    },
-    'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-    }
-}

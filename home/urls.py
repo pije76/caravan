@@ -1,11 +1,11 @@
 #from django.urls import path, re_path
 from django.conf.urls import url, include
 
-from . import views
+from views import *
 
 urlpatterns = [
-    url(r'', views.indexView, name="indexView"),
-    url("login", views.loginView, name="loginView"),
-#    url("logout", views.logout, name="logout"),
-#    url("check_account", views.checkAccount, name="checkAccount"),
+    url(r'^$', indexView, name="indexView"),
+    url(r'^login$', loginView, name="loginView"),
+    url(r'^logout$', logout, name="logout"),
+    url(r'^check_account$', checkAccount, name='checkAccount')
 ]
