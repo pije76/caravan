@@ -5,7 +5,7 @@ from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.http import HttpResponse
 
-from database.models import TblUser
+from caravanrouter.database.models import TblUser
 
 
 # ***********************************************************************************

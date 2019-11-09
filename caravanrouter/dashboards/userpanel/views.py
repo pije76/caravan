@@ -8,8 +8,8 @@ from django.http import HttpResponse
 
 from calendar import monthrange
 
-from database.models import *
-from module.orangem2m import *
+from caravanrouter.database.models import *
+from caravanrouter.module.orangem2m import *
 
 # ***********************************************************************************
 # @function: Get Subscription Type String

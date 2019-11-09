@@ -37,12 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'home',
-    'database',
-    'adminpanel',
-    'userpanel',
-    'module',
+    'caravanrouter.database',
 ]
 
 MIDDLEWARE = [

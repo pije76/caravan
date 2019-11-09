@@ -16,10 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.conf.urls import url, include
 
-from home.views import indexView
-
 urlpatterns = [
-	url(r'', include('home.urls')),
-	url(r'^admin/', include("adminpanel.urls")),
-	url('user/', include("userpanel.urls")),
+	url(r'', include('caravanrouter.dashboards.home.urls')),
+	url(r'^admin/', include("caravanrouter.dashboards.adminpanel.urls")),
+	url('user/', include("caravanrouter.dashboards.userpanel.urls")),
 ]
