@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load staticfiles %}
+<head>
+    <meta charset="UTF-8">
+    <title>Caravan Routers</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css", rel="stylesheet">
+    <link href="{% static "library/themes/pastel/css/style.css" %}" rel="stylesheet">
+    <link href="{% static "library/themes/pastel/css/responsive.css" %}" rel="stylesheet">
+    <link href="{% static "caravanrouter/css/style.css" %}" rel="stylesheet">
+
+    <style>
+        .wrapper-page {
+            margin: 5% auto;
+            position: relative;
+            max-width: 420px;
+        }
+        .account-pages {
+            -webkit-box-shadow: 0 0px 24px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02);
+        }
+        .account-logo-box {
+            background: #60bc99;
+            padding: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+        .account-pages .account-content {
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="wrapper-page">
+                    <div class="m-t-40 account-pages">
+                        <div class="text-center account-pages">
+                            <div class="text-center account-logo-box">
+                                <div class="m-t-10 m-b-10">
+                                    <a class="text-success">
+                                        <span>
+                                            <img src="{% static "caravanrouter/asset/logo/logo.png" %}" alt="" height="90">
+                                        </span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="account-content">
+                                <form class="form-horizontal" action="/check_account" method="post">
+                                    <div class="form-group row">
+                                        <div class="col-md-12">
+                                            <select v-model="language"
+                                                    v-on:change="onChangeLanguage"
+                                                    class="form-control" style="width:30%; float:right;">
+                                                <option value="1">English</option>
+                                                <option value="2">Svenska</option>
+                                                <option value="3">Español</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12" style="text-align: left;">
+                                            <label for="email">[[ email_str ]]</label>
+                                            <input id="email" name="email" class="form-control" type="text" required="" style="border:1px solid #999">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-12" style="text-align: left;">
+                                            <label for="password">[[ password_str ]]</label>
+                                            <input id="password" class="form-control" name="password" type="password" required="" style="border:1px solid #999">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <a style="float:right;">[[ forgot_pwd_str ]]</a>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-12">
+                                            <button class="btn w-md btn-bordered btn-custom btn-success waves-effect waves-light" type="submit" style="min-width:110px; float:left;">[[ login_str ]]</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+
+<script>
+    var login_form_vue;
+
+    $(document).ready(function() {
+        login_form_vue = new Vue({
+            delimiters: ['[[', ']]'],
+
+            el: ".account-content",
+
+            data: {
+                language: 1,
+                email_str: "Email",
+                password_str: "Password",
+                forgot_pwd_str: "Forgot password?",
+                login_str: "Log in"
+            },
+
+            methods: {
+                onChangeLanguage: function() {
+                    if (this.language == 1) {       // English
+                        this.email_str = "Email";
+                        this.password_str = "Password";
+                        this.forgot_pwd_str = "Forgot password?";
+                        this.login_str = "Log in";
+                    } else if (this.language == 2) {    // Swedish
+                        this.email_str = "E-post";
+                        this.password_str = "Lösenord";
+                        this.forgot_pwd_str = "Glömt lösenord?";
+                        this.login_str = "Logga in";
+                    } else if (this.language == 3) {    // Spanish
+                        this.email_str = "Email";
+                        this.password_str = "Contraseña";
+                        this.forgot_pwd_str = "¿Cuál es mi clave?";
+                        this.login_str = "Iniciar sesión";
+                    }
+                }
+            }
+        });
+    });
+</script>
+</html>

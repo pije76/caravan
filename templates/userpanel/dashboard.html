@@ -1,0 +1,390 @@
+{% extends "index.html" %}
+{% block page_content %}
+{% load staticfiles %}
+<section class="page-content area-padding-bottom" style="min-height:460px;">
+    <div class="container-fluid" style="max-width:1240px;">
+        <div style="text-align:center; margin-top:20px;">
+            <span style="font-weight:bold; font-size:40px;">{{ page_text.welcome }}</span>
+            <br><br>
+            <span style="font-size:25px;">{{ page_text.subscription }}</span>
+            <br><br>
+            <span style="font-size:23px;">( {{ page_text.subscr_period }} )</span>
+        </div>
+    </div>
+    <div class="container-fluid" style="max-width:1240px;">
+        <div class="row">
+            <div class="col-md-6" style="{% if type == 1 %} display:None; {% endif %};">
+                <label class="form-control" style="color:#54595f; font-size:20px; border:none;">{{ page_text.iccid_list }}</label>
+                <br>
+                <select id="iccid" onchange="on_change_iccid();" class="form-control"
+                        style="width:70%; border-color:#bbb; color:#54595f; font-size:20px; height:400px; float:left;" size="2">
+                    {% for iccid, iccid_data in simcard_data.items %}
+                        <option value="{{ iccid }}" {% if forloop.counter == 1 %}selected{% endif %}>{{ iccid }}</option>
+                    {% endfor %}
+                </select>
+                <button onclick="on_update();" class="btn btn-success" style="float:left; margin-left:10px;"
+                        data-target="#updateIccidModal" data-toggle="modal">{{ page_text.update }}</button>
+            </div>
+            {% for iccid, iccid_data in simcard_data.items %}
+                <div class="iccid-data iccid-{{ iccid }} {% if type == 1 %}col-md-12{% else %}col-md-6{% endif %}" style="{% if forloop.counter != 1 %}display:None {% endif %}">
+                    <div id="total_traffic_chart_{{ iccid }}" style="height:500px;"></div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% for iccid, iccid_data in simcard_data.items %}
+        <div class="container-fluid iccid-data iccid-{{ iccid }}" style="max-width:1240px; {% if forloop.counter != 1 %}display:None {% endif %}">
+            <div class="row">
+                <div class="col-md-12" style="text-align:center; margin-top:40px;">
+                    {% if iccid_data.status == "ACTIVATED" %}
+                        <span class="label-success sim-status">{{ page_text.activated }}</span>
+                    {% elif iccid_data.status == "BLOCKED_BY_CUSTOMER" %}
+                        <span class="label-primary sim-status">{{ page_text.blocked }}</span>
+                    {% elif iccid_data.status == "SUSPENDED" %}
+                        <span class="label-danger sim-status">{{ page_text.suspended }}</span>
+                    {% endif %}
+                    <br><br>
+                    <span style="font-size:35px; font-weight:bold;">{{ page_text.left_days }}</span>
+                </div>
+            </div>
+            <div class="row" style="margin-top:20px;">
+                <div id="daily_usage_chart_{{ iccid }}" class="col-md-12" style="height:500px"></div>
+            </div>
+            <div class="row">
+                <div id="monthly_usage_chart_{{ iccid }}" class="col-md-12" style="height:500px;"></div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <div id="updateIccidModal" class="modal modal-adminpro-general default-popup-PrimaryModal fade" role="dialog" style="color:#54595f;">
+        <div class="modal-dialog" style="width:600px; max-width:600px; font-size:16px;">
+            <div class="modal-content">
+                <div class="modal-header header-color-modal star-back-color" style="height:50px; color:white;">
+                    <h2 class="modal-title" style="font-size:27px; color:#54595f;">{{ page_text.update_iccid }}</h2>
+                    <div class="modal-close-area modal-close-df">
+                        <a class="close star-back-color" data-dismiss="modal" href="#" style="color:#54595f; margin-top:-25px;"><i class="fa fa-close"></i></a>
+                    </div>
+                </div>
+                <div style="margin-top:15px;">
+                    <section class="content" style="width:90%; margin-left:5%;">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label style="font-weight:bold !important; font-size:21px;"></label>
+                            </div>
+                            <div class="col-md-6">
+                                <label>{{ page_text.status }} (*)</label>
+                                <select v-model="status" class="form-control">
+                                    <option value="ACTIVATED">{{ page_text.activate }}</option>
+                                    <option value="BLOCKED_BY_CUSTOMER">{{ page_text.block }}</option>
+                                    <option value="SUSPENDED">{{ page_text.suspend }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="modal-footer">
+                    <button v-on:click="on_confirm" id="confirm_register" class="btn btn-success">{{ page_text.confirm }}</button>
+                    <button class="btn btn-success" data-dismiss="modal">{{ page_text.close }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="{% static "library/themes/pastel/js/jquery-3.3.1.min.js" %}"></script>
+<script src="{% static "library/themes/pastel/js/bootstrap.min.js" %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+<script src="{% static "caravanrouter/js/Lobibox.js" %}"></script>
+<script src="{% static "caravanrouter/js/common.js" %}"></script>
+<script src="{% static "library/amchart/core.js" %}"></script>
+<script src="{% static "library/amchart/charts.js" %}"></script>
+<script src="{% static "library/amchart/animated.js" %}"></script>
+
+<script>
+    var simcard_data = {};
+    var iccid_update_vue;
+    var month_str = new Array();
+
+    function on_update() {
+        iccid_update_vue.iccid = $("#iccid").val();
+        //iccid_update_vue.status = simcard_data[iccid_update_vue.iccid]["status"];
+    }
+
+    function on_change_iccid() {
+        $(".iccid-data").css("display", "none");
+        $(".iccid-" + $("#iccid").val()).css("display", "block");
+    }
+
+    $(document).ready(function() {
+        {% for month in page_text.months %}
+            month_str.push("{{ month }}");
+        {% endfor %}
+
+        {% for iccid, iccid_data in simcard_data.items %}
+            simcard_data["{{ iccid }}"] = {
+                "monthly_usage": new Array(),
+                "daily_usage": new Array(),
+                "total_traffic": {{ iccid_data.total_traffic }},
+                "subscr_traffic": {{ iccid_data.subscr_traffic }},
+                "status": "{{ iccid_data.status }}"
+            };
+
+            {% for day, traffic in iccid_data.daily_usage.items %}
+                simcard_data["{{ iccid }}"]["daily_usage"].push({
+                    "day": "{{ cur_month }}" + "/" + "{{ day }}",
+                    "traffic": {{ traffic }}
+                });
+            {% endfor %}
+
+            {% for month,traffic in iccid_data.monthly_usage.items %}
+                simcard_data["{{ iccid }}"]["monthly_usage"].push({
+                    "month": month_str[{{ month }} - 1],
+                    "traffic": {{ traffic }},
+                });
+            {% endfor %}
+        {% endfor %}
+
+        am4core.ready(function() {
+            // Themes begin
+            am4core.useTheme(am4themes_animated);
+
+            var daily_chart = {};
+            let daily_chart_title = {};
+            var daily_categoryAxis = {};
+            var daily_valueAxis = {};
+            var daily_columnSeries = {};
+            var daily_lineSeries = {};
+            var daily_bullet = {};
+            var daily_circle = {};
+
+            var monthly_chart = {};
+            let monthly_chart_title = {};
+            var monthly_categoryAxis = {};
+            var monthly_valueAxis = {};
+            var monthly_columnSeries = {};
+            var monthly_lineSeries = {};
+            var monthly_bullet = {};
+            var monthly_circle = {};
+
+            var total_traffic_chart = {};
+            let total_traffic_chart_title = {};
+            var total_traffic_pieSeries = {};
+            var total_traffic_shadow = {};
+            var total_traffic_hoverstate = {};
+            var total_traffic_hovershadow = {};
+
+            for (var iccid in simcard_data) {
+                // --------------- totail traffic chart --------------- //
+                total_traffic_chart[iccid] = am4core.create("total_traffic_chart_" + iccid, am4charts.PieChart);
+                /*total_traffic_chart_title[iccid] = total_traffic_chart[iccid].titles.create();
+                total_traffic_chart_title[iccid].text = "";
+                total_traffic_chart_title[iccid].fontSize = 25;
+                total_traffic_chart_title[iccid].marginBottom = 0;*/
+
+                total_traffic_pieSeries[iccid] = total_traffic_chart[iccid].series.push(new am4charts.PieSeries());
+                total_traffic_pieSeries[iccid].dataFields.value = "traffic";
+                total_traffic_pieSeries[iccid].dataFields.category = "period";
+
+                total_traffic_chart[iccid].innerRadius = am4core.percent(0);
+
+                total_traffic_pieSeries[iccid].slices.template.stroke = am4core.color("#fff");
+                total_traffic_pieSeries[iccid].slices.template.strokeWidth = 2;
+                total_traffic_pieSeries[iccid].slices.template.strokeOpacity = 1;
+                total_traffic_pieSeries[iccid].slices.template
+                    .cursorOverStyle = [
+                    {
+                        "property": "cursor",
+                        "value": "pointer"
+                    }
+                ];
+
+                total_traffic_pieSeries[iccid].alignLabels = false;
+                total_traffic_pieSeries[iccid].labels.template.bent = true;
+                total_traffic_pieSeries[iccid].labels.template.radius = 3;
+                total_traffic_pieSeries[iccid].labels.template.padding(0, 0, 0, 0);
+                total_traffic_pieSeries[iccid].ticks.template.disabled = true;
+                total_traffic_pieSeries[iccid].alignLabels = false;
+                total_traffic_pieSeries[iccid].labels.template.text = "{value.percent.formatNumber('#.0')}%";
+                total_traffic_pieSeries[iccid].slices.template.tooltipText = "{category} : {value}GB";
+                total_traffic_pieSeries[iccid].labels.template.radius = am4core.percent(-10);
+                total_traffic_pieSeries[iccid].labels.template.fill = am4core.color("white");
+
+                total_traffic_pieSeries[iccid].colors.list = ["#55c0b4", "#ef972e"].map(function(color) {
+                      return new am4core.color(color);
+                });
+
+                total_traffic_shadow[iccid] = total_traffic_pieSeries[iccid].slices.template.filters.push(new am4core.DropShadowFilter);
+                total_traffic_shadow[iccid].opacity = 0;
+                total_traffic_hoverstate[iccid] = total_traffic_pieSeries[iccid].slices.template.states.getKey("hover");
+
+                total_traffic_hovershadow[iccid] = total_traffic_hoverstate[iccid].filters.push(new am4core.DropShadowFilter);
+                total_traffic_hovershadow.opacity = 0.7;
+                total_traffic_hovershadow.blur = 5;
+
+                total_traffic_chart[iccid].legend = new am4charts.Legend();
+                total_traffic_chart[iccid].legend.position = "bottom";
+
+                total_traffic_chart[iccid].data = [{
+                    "traffic": simcard_data[iccid]["subscr_traffic"] - simcard_data[iccid]["total_traffic"],
+                    "period": "{{ page_text.total_left_month }}"
+                },{
+                    "traffic": simcard_data[iccid]["total_traffic"],
+                    "period": "{{ page_text.total_used_month }}"
+                }];
+
+
+                // --------------- daily usage chart --------------- //
+                // Create chart instance
+                daily_chart[iccid] = am4core.create("daily_usage_chart_" + iccid, am4charts.XYChart);
+
+                daily_chart_title[iccid] = daily_chart[iccid].titles.create();
+                daily_chart_title[iccid].text = "{{ daily_chart_title }} ({{ page_text.unit }}: Kbyte)";
+                daily_chart_title[iccid].fontSize = 20;
+                daily_chart_title[iccid].marginBottom = 30;
+
+                // Create axes
+                daily_categoryAxis[iccid] = daily_chart[iccid].xAxes.push(new am4charts.CategoryAxis());
+                daily_categoryAxis[iccid].dataFields.category = "day";
+                daily_categoryAxis[iccid].renderer.minGridDistance = 30;
+                // Create value axis
+                daily_valueAxis[iccid] = daily_chart[iccid].yAxes.push(new am4charts.ValueAxis());
+                // Create series
+                daily_columnSeries[iccid] = daily_chart[iccid].series.push(new am4charts.ColumnSeries());
+                daily_columnSeries[iccid].name = "Traffic";
+                daily_columnSeries[iccid].dataFields.valueY = "traffic";
+                daily_columnSeries[iccid].dataFields.categoryX = "day";
+
+                //daily_columnSeries.columns.template.tooltipText = "[#fff font-size: 15px]{name} in {categoryX}:\n[/][#fff font-size: 20px]{valueY} Kbyte[/] [#fff]{additional}[/]"
+                daily_columnSeries[iccid].columns.template.tooltipText = "";
+                daily_columnSeries[iccid].columns.template.propertyFields.fillOpacity = .5;
+                daily_columnSeries[iccid].columns.template.propertyFields.stroke = "stroke";
+                daily_columnSeries[iccid].columns.template.propertyFields.strokeWidth = "strokeWidth";
+                daily_columnSeries[iccid].columns.template.propertyFields.strokeDasharray = "columnDash";
+                daily_columnSeries[iccid].columns.template.stroke = am4core.color('rgba(54, 162, 235, 0)');
+                daily_columnSeries[iccid].columns.template.column.fillOpacity = 0;
+                daily_columnSeries[iccid].tooltip.label.textAlign = "middle";
+
+                daily_lineSeries[iccid] = daily_chart[iccid].series.push(new am4charts.LineSeries());
+                daily_lineSeries[iccid].name = "Traffic";
+                daily_lineSeries[iccid].dataFields.valueY = "traffic";
+                daily_lineSeries[iccid].dataFields.categoryX = "day";
+                daily_lineSeries[iccid].stroke = am4core.color("#ef972e");
+                daily_lineSeries[iccid].strokeWidth = 3;
+                daily_lineSeries[iccid].propertyFields.strokeDasharray = "lineDash";
+                daily_lineSeries[iccid].tooltip.label.textAlign = "middle";
+
+                daily_bullet[iccid] = daily_lineSeries[iccid].bullets.push(new am4charts.Bullet());
+                daily_bullet[iccid].fill = am4core.color("#ef972e"); // tooltips grab fill from parent by default
+                daily_bullet[iccid].tooltipText = "[black font-size: 15px]{name} - {categoryX}:\n[/][black font-size: 20px]{valueY} Kbyte[/] [black]{additional}[/]"
+                daily_circle[iccid] = daily_bullet[iccid].createChild(am4core.Circle);
+                daily_circle[iccid].radius = 4;
+                daily_circle[iccid].fill = am4core.color("#fff");
+                daily_circle[iccid].strokeWidth = 3;
+
+                daily_chart[iccid].data = simcard_data[iccid]["daily_usage"];
+
+                // --------------- monthly usage chart --------------- //
+                // Create chart instance
+                monthly_chart[iccid] = am4core.create("monthly_usage_chart_" + iccid, am4charts.XYChart);
+
+                monthly_chart_title[iccid] = monthly_chart[iccid].titles.create();
+                monthly_chart_title[iccid].text = "{{ monthly_chart_title }} ({{ page_text.unit }}: Gbyte)";
+                monthly_chart_title[iccid].fontSize = 20;
+                monthly_chart_title[iccid].marginBottom = 30;
+
+                // Create axes
+                monthly_categoryAxis[iccid] = monthly_chart[iccid].xAxes.push(new am4charts.CategoryAxis());
+                monthly_categoryAxis[iccid].dataFields.category = "month";
+                monthly_categoryAxis[iccid].renderer.minGridDistance = 30;
+
+                // Create value axis
+                monthly_valueAxis[iccid] = monthly_chart[iccid].yAxes.push(new am4charts.ValueAxis());
+
+                // Create series
+                monthly_columnSeries[iccid] = monthly_chart[iccid].series.push(new am4charts.ColumnSeries());
+                monthly_columnSeries[iccid].name = "{{ page_text.traffic }}";
+                monthly_columnSeries[iccid].dataFields.valueY = "traffic";
+                monthly_columnSeries[iccid].dataFields.categoryX = "month";
+
+                //monthly_columnSeries.columns.template.tooltipText = "[#fff font-size: 15px]{name} in {categoryX}:\n[/][#fff font-size: 20px]{valueY} Kbyte[/] [#fff]{additional}[/]"
+                monthly_columnSeries[iccid].columns.template.tooltipText = "";
+                monthly_columnSeries[iccid].columns.template.propertyFields.fillOpacity = "fillOpacity";
+                monthly_columnSeries[iccid].columns.template.propertyFields.stroke = "stroke";
+                monthly_columnSeries[iccid].columns.template.propertyFields.strokeWidth = "strokeWidth";
+                monthly_columnSeries[iccid].columns.template.propertyFields.strokeDasharray = "columnDash";
+                monthly_columnSeries[iccid].columns.template.stroke = am4core.color('rgba(54, 162, 235, 0)');
+                monthly_columnSeries[iccid].columns.template.column.fillOpacity = 0;
+                monthly_columnSeries[iccid].tooltip.label.textAlign = "middle";
+
+                monthly_lineSeries[iccid] = monthly_chart[iccid].series.push(new am4charts.LineSeries());
+                monthly_lineSeries[iccid].name = "{{ page_text.traffic }}";
+                monthly_lineSeries[iccid].dataFields.valueY = "traffic";
+                monthly_lineSeries[iccid].dataFields.categoryX = "month";
+                monthly_lineSeries[iccid].stroke = am4core.color("#ef972e");
+                monthly_lineSeries[iccid].strokeWidth = 3;
+                monthly_lineSeries[iccid].propertyFields.strokeDasharray = "lineDash";
+                monthly_lineSeries[iccid].tooltip.label.textAlign = "middle";
+
+                monthly_bullet[iccid] = monthly_lineSeries[iccid].bullets.push(new am4charts.Bullet());
+                monthly_bullet[iccid].fill = am4core.color("#ef972e"); // tooltips grab fill from parent by default
+                monthly_bullet[iccid].tooltipText = "[black font-size: 15px]{name} - {categoryX}:\n[/][black font-size: 20px]{valueY} Gbyte[/] [black]{additional}[/]"
+                monthly_circle[iccid] = monthly_bullet[iccid].createChild(am4core.Circle);
+                monthly_circle[iccid].radius = 4;
+                monthly_circle[iccid].fill = am4core.color("#fff");
+                monthly_circle[iccid].strokeWidth = 3;
+
+                monthly_chart[iccid].data = simcard_data[iccid]["monthly_usage"];
+            }
+        }); // end am4core.ready()
+
+
+        iccid_update_vue = new Vue({
+            delimiters: ['[[', ']]'],
+
+            el: "#updateIccidModal",
+
+            data: {
+                iccid: "",
+                status: "ACTIVATED",
+            },
+
+            methods: {
+                on_confirm: function() {
+                    $("#loading").css("display", "");
+                    $("#waiting").addClass("modal-backdrop fade in");
+
+                    $.ajax({
+                        url: "/user/update_iccid/",
+                        type: "POST",
+                        data: {
+                            "iccid": this.iccid,
+                            "status": this.status
+                        },
+                        async: false,
+                        success: function() {
+                            $("#loading").css("display", "None");
+                            $("#waiting").removeClass("modal-backdrop fade in");
+
+                            alert("Sim status is updated");
+                            if (iccid_update_vue.status == "ACTIVATED")
+                                $(".iccid-" + iccid_update_vue.iccid + " .sim-status").html("ACTIVATED");
+                            else if (iccid_update_vue.status == "BLOCKED_BY_CUSTOMER")
+                                $(".iccid-" + iccid_update_vue.iccid + " .sim-status").html("BLOCKED");
+                            else if (iccid_update_vue.status == "SUSPENDED")
+                                $(".iccid-" + iccid_update_vue.iccid + " .sim-status").html("SUSPENDED");
+                        },
+                        error: function() {
+                            $("#loading").css("display", "None");
+                            $("#waiting").removeClass("modal-backdrop fade in");
+
+                            alert("Error occured while updating sim status");
+                        }
+                    });
+                }
+            },
+
+            watch: {}
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+{% load staticfiles %}
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="shortcut icon" href="https://caravanrouter.com/my_uploads/2018/08/favoicon.png" type="image/x-icon">
+    <title>Caravan Routers</title>
+
+    <link href="{% static "library/themes/pastel/css/bootstrap.css" %}" rel="stylesheet">
+    <link href="{% static "library/themes/pastel/css/style.css" %}" rel="stylesheet">
+    <link href="{% static "library/themes/pastel/css/responsive.css" %}" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="{% static "caravanrouter/css/Lobibox.min.css" %}" rel="stylesheet" >
+    <link href="{% static "caravanrouter/css/notifications.css" %}" rel="stylesheet">
+    <link href="{% static "caravanrouter/css/style.css" %}" rel="stylesheet">
+    <style>
+        #userRegisterModal input {
+            border-color:#bbb;
+        }
+
+        #userRegisterModal textarea {
+            border-color:#bbb;
+        }
+
+        #userRegisterModal select {
+            border-color:#bbb;
+        }
+        table tbody tr {
+            height: 70px;
+        }
+        .sim-status {
+            font-size:25px;
+            font-weight: bold;
+        }
+
+        .modal-backdrop.fade {
+            opacity: 0.5;
+        }
+
+        .modal-title {
+            margin-top:-15px;
+            font-size:27px;
+            color:#54595f;
+        }
+    </style>
+</head>
+<body>
+    <div class="site-main" style="border-top:3px solid; border-color:#25a9bd;">
+        <!--================Header Menu Area =================-->
+        <div class="container-fluid" style="height:50px; max-width:1240px;">
+            <span style="line-height:4">Tel: +46 44-440 44  |  info@caravanrouter.com</span>
+        </div>
+        <header class="header_area" style="background-color:#60bc99;">
+            <div class="main_menu">
+                <nav class="navbar navbar-expand-lg navbar-light" style="height:144px;">
+                    <div class="container-fluid" style="max-width:1240px;">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <a class="navbar-brand logo_h"><img src="{% static "caravanrouter/asset/logo/logo-1.png" %}" alt="" style="width:320px;"></a>
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse offset" id="navbarSupportedContent">
+                            <ul class="nav navbar-nav menu_nav" style="justify-content:right !important">
+{#                                <li class="nav-item active"><a class="nav-link" href="index.html">Home</a></li>#}
+{#                                <li class="nav-item"><a class="nav-link" href="about-us.html">About</a></li>#}
+{#                                <li class="nav-item"><a class="nav-link" href="project.html">Works</a></li>#}
+{#                                <li class="nav-item"><a class="nav-link" href="service.html">Services</a></li>#}
+{#                                <li class="nav-item submenu dropdown">#}
+{#                                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Blog</a>#}
+{#                                    <ul class="dropdown-menu">#}
+{#                                        <li class="nav-item"><a class="nav-link" href="blog.html">Blog</a></li>#}
+{#                                        <li class="nav-item"><a class="nav-link" href="single-blog.html">Blog Details</a></li>#}
+{#                                        <li class="nav-item"><a class="nav-link" href="element.html">Elements</a></li>#}
+{#                                    </ul>#}
+{#                                </li>#}
+                                <li class="nav-item"><a class="nav-link" href="">{{ page_text.shop }}</a></li>
+                                <li class="nav-item"><a class="nav-link" href="">{{ page_text.contact }}</a></li>
+                                <li class="nav-item"><a class="nav-link" data-target="#userProfileModal" data-toggle="modal" style="cursor:pointer;">{{ page_text.profile }}</a></li>
+                                <li class="nav-item"><a class="nav-link" href="/logout">{{ page_text.logout }}</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </header>
+        <div id="loading" style="position:absolute; z-index: 99999; display:None; margin-left:40%">
+            <img src="{% static "caravanrouter/asset/gif/loading.gif" %}">
+        </div>
+        {% block page_content %}
+        {% endblock %}
+
+        <!-- ================ start footer Area ================= -->
+        <footer style="background-color:rgba(0,0,0,0.84); min-height:300px;">
+            <div class="container">
+                <div class="row" style="padding-top:70px;">
+                    <div class="col-md-3">
+                        <img src="{% static "caravanrouter/asset/logo/CARAVANROUTER-150x150.png" %}">
+                    </div>
+                    <div class="col-md-2">
+                        <span style="color:white; font-size:16px; font-weight:bold;">CONTACT</span>
+                        <br><br>
+                        <p style="color:white; font-size:15px; font-weight:bold;">Caravan Router<br>
+                        Calle Tuset 23-25, plan 4<br>
+                        08006 Barcelona – SPAIN<br>
+                        +34 93 142 59 39</p>
+
+                        <div>
+                            <i class="fa fa-envelope"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <div id="waiting" class=""></div>
+    </div>
+
+    <div id="userProfileModal" class="modal modal-adminpro-general default-popup-PrimaryModal fade" role="dialog" style="color:#54595f;">
+        <div class="modal-dialog" style="width:500px; max-width:500px; font-size:16px;">
+            <div class="modal-content">
+                <div class="modal-header header-color-modal star-back-color" style="height:50px; color:white;">
+                    <h2 class="modal-title">{{ page_text.profile }}</h2>
+                    <div class="modal-close-area modal-close-df">
+                        <a class="close star-back-color" data-dismiss="modal" href="#" style="color:#54595f; margin-top:-25px;"><i class="fa fa-close"></i></a>
+                    </div>
+                </div>
+                <div style="margin-top:15px">
+                    <section class="content" style="width:96%; margin-left:2%;">
+                        <div class="row">
+                            <div class="col-md-3"></div>
+                            <div class="col-md-6">
+                                <span style="font-size:16px;">{{ page_text.email }}: {{ email }}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3"></div>
+                            <div class="col-md-6" style="margin-top:15px;">
+                                <span style="font-size:16px;">{{ page_text.password }}: {{ password }}</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" data-dismiss="modal">{{ page_text.close }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

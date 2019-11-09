@@ -1,0 +1,781 @@
+{% extends "index.html" %}
+{% block page_content %}
+{% load staticfiles %}
+    <style>
+        table tbody td {
+            word-break: break-word;
+        }
+    </style>
+<section class="page-content area-padding-bottom" style="min-height:460px;">
+    <div class="container-fluid" style="max-width:1240px;">
+        <div id="user_tbl" style="margin-top:20px;">
+            <div style="width:98%; margin-left:1%;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <input v-model="filter_name"
+                               type="text" class="form-control" style="border-color:#bbb" placeholder="Filter ...">
+                    </div>
+                    <div class="col-md-9">
+                        <button v-on:click="onRegister" class="btn btn-success" style="float:right; margin-right:1%; font-size:14px; margin-bottom:10px;"
+                            data-target="#userRegisterModal" data-toggle="modal">Register</button>
+                    </div>
+                </div>
+                <table class="table-bordered user-table" style="font-size: 16px; margin-top:15px; width:100%;">
+                    <thead style="background-color:#60bc99; color:white; height:35px;">
+                        <th style="width:8%;">Name</th>
+                        <th style="width:7%;">Surname</th>
+                        <th style="width:8%;">Type</th>
+                        <th style="width:10%;">Phone</th>
+                        <th style="width:15%;">Email</th>
+                        <th style="width:20%;">ICCID</th>
+                        <th style="width:15%;">Consumer ID</th>
+                        <th style="width:10%;">Reg Date</th>
+                        <th style="width:7%;">Actions</th>
+                    </thead>
+                    <tbody>
+                        <tr v-if="total_page == 0">
+                            <td colspan="100">
+                                There is no users
+                            </td>
+                        </tr>
+                        <tr v-for="user in user_list">
+                            <td>[[ user.name ]]</td>
+                            <td>[[ user.surname ]]</td>
+                            <td v-if="user.type==1">User</td>
+                            <td v-if="user.type==2">Group</td>
+                            <td>[[ user.phone ]]</td>
+                            <td>[[ user.email ]]</td>
+                            <td>[[ user.iccid ]]</td>
+                            <td>[[ user.consumer_id ]]</td>
+                            <td>[[ user.reg_date ]]</td>
+                            <td>
+                                <i @click="onUpdate(user.id)" class="fa fa-edit" data-target="#userRegisterModal" data-toggle="modal"></i>
+                                <i @click="onDelete(user.id)" class="fa fa-trash"></i>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="pagination" style="float:right !important; margin-right:30px;">
+                    <i v-on:click="onClickPrevious();" class="fa fa-arrow-left" style="padding-top:3px; padding-right:5px;"></i>
+                    <span v-if="total_page != 0">[[ cur_page ]] / [[ total_page ]]</span>
+                    <span v-if="total_page == 0">0 / 0</span>
+                    <i v-on:click="onClickNext();" class="fa fa-arrow-right" style="padding-top:3px; padding-left:5px;"></i>
+                </div>
+            </div>
+            <div>
+                <div id="userRegisterModal" class="modal modal-adminpro-general default-popup-PrimaryModal fade" role="dialog" style="color:#54595f;">
+                    <div class="modal-dialog" style="width:1200px; max-width:1200px; font-size:16px;">
+                        <div class="modal-content">
+                            <div class="modal-header header-color-modal star-back-color" style="height:50px; color:white;">
+                                <h2 v-if="r_u_flag==1" class="modal-title">Register User</h2>
+                                <h2 v-if="r_u_flag==2" class="modal-title">Update User</h2>
+                                <div class="modal-close-area modal-close-df">
+                                    <a class="close star-back-color" data-dismiss="modal" href="#" style="color:#54595f; margin-top:-25px;"><i class="fa fa-close"></i></a>
+                                </div>
+                            </div>
+                            <div style="margin-top:15px;">
+                                <section class="content" style="width:96%; margin-left:2%;">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label style="font-weight:bold !important; font-size:21px;">General</label>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Name (*)</label>
+                                            <input v-model="reg_name" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Surname (*)</label>
+                                            <input v-model="reg_surname" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Phone (*)</label>
+                                            <input v-model="reg_phone" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Mobile (*)</label>
+                                            <input v-model="reg_mobile" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:20px;">
+                                        <div class="col-md-3">
+                                            <label>Email (*)</label>
+                                            <input v-model="reg_email" :disabled="r_u_flag==2" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Password (*)</label>
+                                            <input v-model="reg_password" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Type (*)</label>
+                                            <select v-model="reg_type" class="form-control">
+                                                <option value="1">User</option>
+                                                <option value="2">Group</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Language (*)</label>
+                                            <select v-model="reg_language" class="form-control">
+                                                <option value="1">English</option>
+                                                <option value="2">Swedish</option>
+                                                <option value="3">Spanish</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:20px;">
+                                        <div class="col-md-3">
+                                            <label>Invoice NR</label>
+                                            <input v-model="reg_invoice_nr" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Order NR</label>
+                                            <input v-model="reg_order_nr" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:40px">
+                                        <div class="col-md-12">
+                                            <label style="font-weight:bold !important; font-size:21px;">Billing Address</label>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:10px">
+                                        <div class="col-md-6">
+                                            <label>Address1 (*)</label>
+                                            <input v-model="reg_bill_address1" class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Address2 (*)</label>
+                                            <input v-model="reg_bill_address2" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:20px">
+                                        <div class="col-md-3">
+                                            <label>Country (*)</label>
+                                            <input v-model="reg_bill_country" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>City (*)</label>
+                                            <input v-model="reg_bill_city" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>State/Region (*)</label>
+                                            <input v-model="reg_bill_state" class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Postal Code (*)</label>
+                                            <input v-model="reg_bill_postalcode" class="form-control">
+                                        </div>
+                                    </div>
+
+                                    <div class="row" style="margin-top:40px">
+                                        <div class="col-md-12">
+                                            <label style="font-weight:bold !important; font-size:21px;">Shipping Address &nbsp;&nbsp;&nbsp;</label>
+                                            <input v-model="skip_shipping" type="checkbox">
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:10px">
+                                        <div class="col-md-6">
+                                            <label>Address1 (*)</label>
+                                            <input v-model="reg_ship_address1"
+                                                   :disabled="skip_shipping==1"
+                                                   class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Address2 (*)</label>
+                                            <input v-model="reg_ship_address2"
+                                                   :disabled="skip_shipping==1"
+                                                   class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:20px">
+                                        <div class="col-md-3">
+                                            <label>Country (*)</label>
+                                            <input v-model="reg_ship_country"
+                                                   :disabled="skip_shipping==1"
+                                                   class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>City (*)</label>
+                                            <input v-model="reg_ship_city"
+                                                   :disabled="skip_shipping==1"
+                                                   class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>State/Region (*)</label>
+                                            <input v-model="reg_ship_state"
+                                                   :disabled="skip_shipping==1"
+                                                   class="form-control">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Postal Code (*)</label>
+                                            <input v-model="reg_ship_postalcode"
+                                                   :disabled="skip_shipping==1"
+                                                   class="form-control">
+                                        </div>
+                                    </div>
+
+                                    <div class="row" style="margin-top:40px">
+                                        <div class="col-md-12">
+                                            <label style="font-weight:bold !important; font-size:21px;">Device</label>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:10px">
+                                        <div class="col-md-6">
+                                            <label>ICCID (*)</label>
+                                            <input v-model="reg_iccid" class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Consumer ID (*)</label>
+                                            <input v-model="reg_consumerid" class="form-control">
+                                        </div>
+{#                                                <div class="col-md-3" v-bind:style="r_u_flag==1?'display:none':'display:block'">#}
+{#                                                    <label>Status</label>#}
+{#                                                    <select class="form-control">#}
+{#                                                        <option>Activated</option>#}
+{#                                                        <option>Deactivated</option>#}
+{#                                                        <option>Sleeping</option>#}
+{#                                                        <option>Suspended</option>#}
+{#                                                    </select>#}
+{#                                                </div>#}
+                                    </div>
+
+                                    <div class="row" style="margin-top:40px">
+                                        <div class="col-md-12">
+                                            <label style="font-weight:bold !important; font-size:21px;">Subscription</label>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:10px">
+                                        <div class="col-md-3">
+                                            <label>Month</label>
+                                            <select v-model="reg_subscr_month" class="form-control">
+                                                <option value="3">3 Months</option>
+                                                <option value="6">6 Months</option>
+                                                <option value="12">12 Months</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Data</label>
+                                            <select v-model="reg_subscr_data" class="form-control">
+                                                <option value="5">5 GB</option>
+                                                <option value="10">10 GB</option>
+                                                <option value="20">20 GB</option>
+                                                <option value="50">50 GB</option>
+                                                <option value="100">100 GB</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Type</label>
+                                            <select v-model="reg_subscr_type" class="form-control">
+                                                <option value="1">National</option>
+                                                <option value="2">Roaming</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="row" style="margin-top:40px">
+                                        <div class="col-md-12">
+                                            <label style="font-weight:bold !important; font-size:21px;">Other</label>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:10px">
+                                        <div class="col-md-3">
+                                            <label>Note</label>
+                                            <textarea v-model="reg_note" class="form-control" rows="3" cols="5"></textarea>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                            <div class="modal-footer">
+                                <button v-on:click="onRegisterUser()" id="confirm_register" class="btn btn-success">Confirm</button>
+                                <button class="btn btn-success" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="{% static "library/themes/pastel/js/jquery-3.3.1.min.js" %}"></script>
+<script src="{% static "library/themes/pastel/js/bootstrap.min.js" %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+<script src="{% static "caravanrouter/js/Lobibox.js" %}"></script>
+<script src="{% static "caravanrouter/js/common.js" %}"></script>
+<script>
+    var usertbl_vue;
+    var user_list = new Array();
+
+    function get_page_users() {
+        $.ajax({
+            type: "POST",
+            url: "/admin/get_page_content/",
+            data: {
+                "filter_name": usertbl_vue.filter_name,
+                "cur_page": usertbl_vue.cur_page
+            },
+            async: false,
+            success: function(res) {
+                res = JSON.parse(res);
+                usertbl_vue.total_page = res["total_page"];
+                res = res["user_list"];
+                usertbl_vue.user_list = new Array();
+                for (var i = 0; i < res.length; i++) {
+                    usertbl_vue.user_list.push(res[i]);
+                }
+            }
+        });
+    }
+
+    // *************** document ready function *************** //
+    $(document).ready(function() {
+        // ---------- load user list ---------- //
+        {% for user in user_list %}
+            user_list.push({
+                "id": {{ user.id }},
+                "name": "{{ user.name }}",
+                "surname": "{{ user.surname }}",
+                "type": {{ user.type }},
+                "language": {{ user.language }},
+                "invoice_nr": "{{ user.invoice_nr }}",
+                "order_nr": "{{ user.order_nr }}",
+                "phone": "{{ user.phone }}",
+                "mobile": "{{ user.mobile }}",
+                "email": "{{ user.email }}",
+                "password": "{{ user.password }}",
+                "bill_address1": "{{ user.bill_address1 }}",
+                "bill_address2": "{{ user.bill_address2 }}",
+                "bill_country": "{{ user.bill_country }}",
+                "bill_city": "{{ user.bill_city }}",
+                "bill_state": "{{ user.bill_state }}",
+                "bill_postalcode": "{{ user.bill_postalcode }}",
+                "shipping_address1": "{{ user.shipping_address1 }}",
+                "shipping_address2": "{{ user.shipping_address2 }}",
+                "shipping_country": "{{ user.shipping_country }}",
+                "shipping_city": "{{ user.shipping_city }}",
+                "shipping_state": "{{ user.shipping_state }}",
+                "shipping_postalcode": "{{ user.shipping_postalcode }}",
+                "iccid": "{{ user.iccid }}",
+                "consumer_id": "{{ user.consumer_id }}",
+                "subscr_month": {{ user.subscr_month }},
+                "subscr_data": {{ user.subscr_data }},
+                "subscr_type": {{ user.subscr_type }},
+                "note": "{{ user.note }}".replace(/slashn/g, "\n").replace(/&#39;/g, "'").replace(/slashopposite/g, "\\"),
+                "reg_date": "{{ user.reg_date }}"
+            });
+        {% endfor %}
+
+        usertbl_vue = new Vue({
+            delimiters: ['[[', ']]'],
+
+            el : "#user_tbl",
+
+            data: {
+                r_u_flag: 1,
+                reg_name: "",
+                reg_surname: "",
+                reg_phone: "",
+                reg_mobile: "",
+                reg_email: "",
+                reg_password: "",
+                reg_type: "1",
+                reg_language: "1",
+                reg_invoice_nr: "",
+                reg_order_nr: "",
+                reg_bill_address1: "",
+                reg_bill_address2: "",
+                reg_bill_country: "",
+                reg_bill_city: "",
+                reg_bill_state: "",
+                reg_bill_postalcode: "",
+                reg_ship_address1: "",
+                reg_ship_address2: "",
+                reg_ship_country: "",
+                reg_ship_city: "",
+                reg_ship_state: "",
+                reg_ship_postalcode: "",
+                reg_iccid: "",
+                reg_consumerid: "",
+                reg_subscr_month: 3,
+                reg_subscr_data: 5,
+                reg_subscr_type: 1,
+                reg_note: "",
+
+                skip_shipping: 1,
+                cur_page: 1,
+                total_user: {{ total_user }},
+                total_page: {{ total_page }},
+                user_list: user_list,
+
+                filter_name: "",
+                cur_idx: 0
+            },
+
+            methods: {
+                // *************** On Register User *************** //
+                onRegister: function() {
+                    this.r_u_flag = 1;
+                    this.reg_name = "";
+                    this.reg_surname = "";
+                    this.reg_phone = "";
+                    this.reg_mobile = "";
+                    this.reg_email = "";
+                    this.reg_password = "";
+                    this.reg_type = 1;
+                    this.reg_language = 1;
+                    this.reg_invoice_nr = "";
+                    this.reg_order_nr = "";
+                    this.reg_bill_address1 = "";
+                    this.reg_bill_address2 = "";
+                    this.reg_bill_country = "";
+                    this.reg_bill_city = "";
+                    this.reg_bill_state = "";
+                    this.reg_bill_postalcode = "";
+                    this.skip_shipping = 1;
+                    this.reg_ship_address1 = "";
+                    this.reg_ship_address2 = "";
+                    this.reg_ship_country = "";
+                    this.reg_ship_city = "";
+                    this.reg_ship_state = "";
+                    this.reg_ship_postalcode = "";
+                    this.reg_iccid = "";
+                    this.reg_consumerid = "";
+                    this.reg_subscr_month = 3;
+                    this.reg_subscr_data = 5;
+                    this.reg_subscr_type = 1;
+                    this.reg_note = "";
+                },
+
+                // *************** On Update User *************** //
+                onUpdate: function(id) {
+                    var idx;
+                    var i;
+                    this.r_u_flag = 2;
+                    for (i = 0; i < this.user_list.length; i++) {
+                        if (this.user_list[i]["id"] == id) {
+                            idx = i;
+                            this.cur_idx = idx;
+                            break;
+                        }
+                    }
+                    this.reg_name = this.user_list[idx]["name"];
+                    this.reg_surname = this.user_list[idx]["surname"];
+                    this.reg_phone = this.user_list[idx]["phone"];
+                    this.reg_mobile = this.user_list[idx]["mobile"];
+                    this.reg_email = this.user_list[idx]["email"];
+                    this.reg_password = this.user_list[idx]["password"];
+                    this.reg_type = this.user_list[idx]["type"];
+                    this.reg_language = this.user_list[idx]["language"];
+                    this.reg_invoice_nr = this.user_list[idx]["invoice_nr"];
+                    this.reg_order_nr = this.user_list[idx]["order_nr"];
+                    this.reg_bill_address1 = this.user_list[idx]["bill_address1"];
+                    this.reg_bill_address2 = this.user_list[idx]["bill_address2"];
+                    this.reg_bill_country = this.user_list[idx]["bill_country"];
+                    this.reg_bill_city = this.user_list[idx]["bill_city"];
+                    this.reg_bill_state = this.user_list[idx]["bill_state"];
+                    this.reg_bill_postalcode = this.user_list[idx]["bill_postalcode"];
+                    this.reg_ship_address1 = this.user_list[idx]["shipping_address1"];
+                    this.reg_ship_address2 = this.user_list[idx]["shipping_address2"];
+                    this.reg_ship_country = this.user_list[idx]["shipping_country"];
+                    this.reg_ship_city = this.user_list[idx]["shipping_city"];
+                    this.reg_ship_state = this.user_list[idx]["shipping_state"];
+                    this.reg_ship_postalcode = this.user_list[idx]["shipping_postalcode"];
+                    this.reg_iccid = this.user_list[idx]["iccid"];
+                    this.reg_consumerid = this.user_list[idx]["consumer_id"];
+                    this.reg_subscr_month = this.user_list[idx]["subscr_month"];
+                    this.reg_subscr_data = this.user_list[idx]["subscr_data"];
+                    this.reg_subscr_type = this.user_list[idx]["subscr_type"];
+                    this.reg_note = this.user_list[idx]["note"];
+                },
+
+                // *************** On Delete User *************** //
+                onDelete: function(id) {
+                    if (!confirm("Do you want to delete this user?")) return;
+                    var param = {
+                        "id": id
+                    };
+
+                    $.ajax({
+                        url: "/admin/delete_user/",
+                        type: "POST",
+                        data: {
+                            "id": id
+                        },
+                        success: function() {
+                            for (var i = 0; i < usertbl_vue.user_list.length; i++) {
+                                if (usertbl_vue.user_list[i]["id"] == id) {
+                                    usertbl_vue.user_list.splice(i, 1);
+                                    usertbl_vue.total_user --;
+                                    usertbl_vue.total_page = Math.ceil(usertbl_vue.total_user / 15);
+                                }
+                            }
+                            showMessage(alert_list["0x10009"]["mode"],
+                                        alert_list["0x10009"]["title"],
+                                        alert_list["0x10009"]["msg"], 5000);
+                        },
+                        error: function() {
+                            showMessage(alert_list["0x1000A"]["mode"],
+                                        alert_list["0x1000A"]["title"],
+                                        alert_list["0x1000A"]["msg"], 5000);
+                        }
+                    });
+                },
+
+                // *************** On Confirm To Register User *************** //
+                onRegisterUser: function() {
+                    var param = {};
+
+                    if (this.reg_name == "" || this.reg_surname == "") {
+                        showMessage(alert_list["0x10001"]["mode"], alert_list["0x10001"]["title"], alert_list["0x10001"]["msg"], 5000);
+                        return;
+                    }
+                    if (this.reg_phone == "" || this.reg_mobile == "") {
+                        showMessage(alert_list["0x10001"]["mode"], alert_list["0x10001"]["title"], alert_list["0x10001"]["msg"], 5000);
+                        return;
+                    }
+                    if (this.reg_email == "" || this.reg_password == "") {
+                        showMessage(alert_list["0x10001"]["mode"], alert_list["0x10001"]["title"], alert_list["0x10001"]["msg"], 5000);
+                        return;
+                    }
+                    if (this.reg_bill_address1 == "" || this.reg_bill_address2 == "") {
+                        showMessage(alert_list["0x10001"]["mode"], alert_list["0x10001"]["title"], alert_list["0x10001"]["msg"], 5000);
+                        return;
+                    }
+                    if (this.reg_bill_country == "" || this.reg_bill_city == "" || this.reg_bill_state == "" || this.reg_bill_postalcode == "") {
+                        showMessage(alert_list["0x10001"]["mode"], alert_list["0x10001"]["title"], alert_list["0x10001"]["msg"], 5000);
+                        return;
+                    }
+                    if (this.skip_shipping == 0 && (this.reg_ship_address1 == "" || this.reg_ship_address2 == "")) {
+                        showMessage(alert_list["0x10001"]["mode"], alert_list["0x10001"]["title"], alert_list["0x10001"]["msg"], 5000);
+                        return;
+                    }
+                    if (this.skip_shipping == 0 && (this.reg_ship_country == "" || this.reg_ship_city == "" || this.reg_ship_state == "" || this.reg_ship_postalcode == "")) {
+                        showMessage(alert_list["0x10001"]["mode"], alert_list["0x10001"]["title"], alert_list["0x10001"]["msg"], 5000);
+                        return;
+                    }
+                    if (this.reg_iccid == "") {
+                        showMessage(alert_list["0x10001"]["mode"], alert_list["0x10001"]["title"], alert_list["0x10001"]["msg"], 5000);
+                        return;
+                    }
+                    if (this.reg_consumerid == "") {
+                        showMessage(alert_list["0x10001"]["mode"], alert_list["0x10001"]["title"], alert_list["0x10001"]["msg"], 5000);
+                        return;
+                    }
+
+                    var iccid_list = this.reg_iccid.split(",");
+                    if (this.reg_type == 1 && iccid_list.length > 1) {
+                        showMessage(alert_list["0x10002"]["mode"], alert_list["0x10002"]["title"], alert_list["0x10002"]["msg"], 5000);
+                        return;
+                    }
+
+                    param = {
+                        "name": this.reg_name,
+                        "surname": this.reg_surname,
+                        "type": this.reg_type,
+                        "language": this.reg_language,
+                        "invoice_nr": this.reg_invoice_nr,
+                        "order_nr": this.reg_order_nr,
+                        "phone": this.reg_phone,
+                        "mobile": this.reg_mobile,
+                        "email": this.reg_email,
+                        "password": this.reg_password,
+                        "billing_address": JSON.stringify({
+                            "address1": this.reg_bill_address1,
+                            "address2": this.reg_bill_address2,
+                            "country": this.reg_bill_country,
+                            "city": this.reg_bill_city,
+                            "state": this.reg_bill_state,
+                            "postalcode": this.reg_bill_postalcode
+                        }),
+                        "iccid": this.reg_iccid,
+                        "consumer_id": this.reg_consumerid,
+                        "subscr_month": this.reg_subscr_month,
+                        "subscr_data": this.reg_subscr_data,
+                        "subscr_type": this.reg_subscr_type,
+                        "note": this.reg_note
+                    };
+                    if (this.skip_shipping == 1) {
+                        param["shipping_address"] = {};
+                        param["shipping_address"] = param["billing_address"];
+                    } else{
+                        param["shipping_address"] = JSON.stringify({
+                            "address1": this.reg_ship_address1,
+                            "address2": this.reg_ship_address2,
+                            "country": this.reg_ship_country,
+                            "city": this.reg_ship_city,
+                            "state": this.reg_ship_state,
+                            "postalcode": this.reg_ship_postalcode
+                        });
+                    }
+
+                    if (usertbl_vue.r_u_flag == 1) {   // register case
+                        $.ajax({
+                            url: "/admin/register_user",
+                            type: "POST",
+                            data: {
+                                "param": JSON.stringify(param)
+                            },
+                            success: function(res) {
+                                var tmp_ary = new Array();
+                                var i;
+                                res = JSON.parse(res);
+
+                                for (i = 0; i < usertbl_vue.user_list.length; i++)
+                                    tmp_ary.push(usertbl_vue.user_list[i]);
+
+                                usertbl_vue.user_list = new Array();
+                                usertbl_vue.user_list.push({
+                                    "id": res["id"],
+                                    "name": usertbl_vue.reg_name,
+                                    "surname": usertbl_vue.reg_surname,
+                                    "type": usertbl_vue.reg_type,
+                                    "language": usertbl_vue.reg_language,
+                                    "invoice_nr": usertbl_vue.reg_invoice_nr,
+                                    "order_nr": usertbl_vue.reg_order_nr,
+                                    "phone": usertbl_vue.reg_phone,
+                                    "mobile": usertbl_vue.reg_mobile,
+                                    "email": usertbl_vue.reg_email,
+                                    "password": usertbl_vue.reg_password,
+                                    "bill_address1": usertbl_vue.reg_bill_address1,
+                                    "bill_address2": usertbl_vue.reg_bill_address2,
+                                    "bill_country": usertbl_vue.reg_bill_country,
+                                    "bill_city": usertbl_vue.reg_bill_city,
+                                    "bill_state": usertbl_vue.reg_bill_state,
+                                    "bill_postalcode": usertbl_vue.reg_bill_postalcode,
+                                    "shipping_address1": usertbl_vue.reg_ship_address1,
+                                    "shipping_address2": usertbl_vue.reg_ship_address2,
+                                    "shipping_country": usertbl_vue.reg_ship_country,
+                                    "shipping_city": usertbl_vue.reg_ship_city,
+                                    "shipping_state": usertbl_vue.reg_ship_state,
+                                    "shipping_postalcode": usertbl_vue.reg_ship_postalcode,
+                                    "iccid": usertbl_vue.reg_iccid,
+                                    "consumer_id": usertbl_vue.reg_consumerid,
+                                    "note": usertbl_vue.reg_note,
+                                    "subscr_month": usertbl_vue.reg_subscr_month,
+                                    "subscr_data": usertbl_vue.reg_subscr_data,
+                                    "subscr_type": usertbl_vue.reg_subscr_type,
+                                    "reg_date": res["reg_date"]
+                                });
+
+                                for (i = 0; i < Math.min(tmp_ary.length, 14); i++)
+                                    usertbl_vue.user_list[i + 1] = tmp_ary[i];
+
+                                usertbl_vue.total_user ++;
+                                usertbl_vue.total_page = Math.ceil(usertbl_vue.total_user / 15);
+
+                                showMessage(alert_list["0x10003"]["mode"],
+                                            alert_list["0x10003"]["title"],
+                                            alert_list["0x10003"]["msg"], 5000);
+                            },
+                            error: function(res) {
+                                if (res["responseText"] == "existing_email") {
+                                    showMessage(alert_list["0x10004"]["mode"],
+                                                alert_list["0x10004"]["title"],
+                                                alert_list["0x10004"]["msg"], 5000);
+                                    return;
+                                }
+                                if (res["responseText"] == "existing_consumer_id") {
+                                    showMessage(alert_list["0x10005"]["mode"],
+                                                alert_list["0x10005"]["title"],
+                                                alert_list["0x10005"]["msg"], 5000);
+                                    return;
+                                }
+
+                                showMessage(alert_list["0x10006"]["mode"],
+                                            alert_list["0x10006"]["title"],
+                                            alert_list["0x10006"]["msg"], 5000);
+                            }
+                        });
+                    } else if(usertbl_vue.r_u_flag == 2) {  //      update case
+                        $.ajax({
+                            url: "/admin/update_user",
+                            type: "POST",
+                            data: {
+                                "param": JSON.stringify(param)
+                            },
+                            success: function() {
+                                var idx = usertbl_vue.cur_idx;
+                                usertbl_vue.user_list[idx]["name"] = usertbl_vue.reg_name;
+                                usertbl_vue.user_list[idx]["surname"] = usertbl_vue.reg_surname;
+                                usertbl_vue.user_list[idx]["phone"] = usertbl_vue.reg_phone;
+                                usertbl_vue.user_list[idx]["mobile"] = usertbl_vue.reg_mobile;
+                                usertbl_vue.user_list[idx]["password"] = usertbl_vue.reg_password;
+                                usertbl_vue.user_list[idx]["type"] = usertbl_vue.reg_type;
+                                usertbl_vue.user_list[idx]["language"] = usertbl_vue.reg_language;
+                                usertbl_vue.user_list[idx]["invoice_nr"] = usertbl_vue.reg_invoice_nr;
+                                usertbl_vue.user_list[idx]["order_nr"] = usertbl_vue.reg_order_nr;
+
+                                usertbl_vue.user_list[idx]["bill_address1"] = usertbl_vue.reg_bill_address1;
+                                usertbl_vue.user_list[idx]["bill_address2"] = usertbl_vue.reg_bill_address2;
+                                usertbl_vue.user_list[idx]["bill_country"] = usertbl_vue.reg_bill_country;
+                                usertbl_vue.user_list[idx]["bill_city"] = usertbl_vue.reg_bill_city;
+                                usertbl_vue.user_list[idx]["bill_state"] = usertbl_vue.reg_bill_state;
+                                usertbl_vue.user_list[idx]["bill_postalcode"] = usertbl_vue.reg_bill_postalcode;
+
+                                if (usertbl_vue.skip_shipping == 1) {
+                                    usertbl_vue.user_list[idx]["shipping_address1"] = usertbl_vue.reg_bill_address1;
+                                    usertbl_vue.user_list[idx]["shipping_address2"] = usertbl_vue.reg_bill_address2;
+                                    usertbl_vue.user_list[idx]["shipping_country"] = usertbl_vue.reg_bill_country;
+                                    usertbl_vue.user_list[idx]["shipping_city"] = usertbl_vue.reg_bill_city;
+                                    usertbl_vue.user_list[idx]["shipping_state"] = usertbl_vue.reg_bill_state;
+                                    usertbl_vue.user_list[idx]["shipping_postalcode"] = usertbl_vue.reg_bill_postalcode;
+                                } else {
+                                    usertbl_vue.user_list[idx]["shipping_address1"] = usertbl_vue.reg_ship_address1;
+                                    usertbl_vue.user_list[idx]["shipping_address2"] = usertbl_vue.reg_ship_address2;
+                                    usertbl_vue.user_list[idx]["shipping_country"] = usertbl_vue.reg_ship_country;
+                                    usertbl_vue.user_list[idx]["shipping_city"] = usertbl_vue.reg_ship_city;
+                                    usertbl_vue.user_list[idx]["shipping_state"] = usertbl_vue.reg_ship_state;
+                                    usertbl_vue.user_list[idx]["shipping_postalcode"] = usertbl_vue.reg_ship_postalcode;
+                                }
+
+                                usertbl_vue.user_list[idx]["iccid"] = usertbl_vue.reg_iccid;
+                                usertbl_vue.user_list[idx]["consumer_id"] = usertbl_vue.reg_consumerid;
+                                usertbl_vue.user_list[idx]["subscr_month"] = usertbl_vue.reg_subscr_month;
+                                usertbl_vue.user_list[idx]["subscr_data"] = usertbl_vue.reg_subscr_data;
+                                usertbl_vue.user_list[idx]["subscr_type"] = usertbl_vue.reg_subscr_type;
+                                usertbl_vue.user_list[idx]["note"] = usertbl_vue.reg_note;
+
+                                showMessage(alert_list["0x10007"]["mode"],
+                                            alert_list["0x10007"]["title"],
+                                            alert_list["0x10007"]["msg"], 5000);
+                            },
+                            error: function(res) {
+                                if (res["responseText"] == "existing_consumer_id") {
+                                    showMessage(alert_list["0x10005"]["mode"],
+                                                alert_list["0x10005"]["title"],
+                                                alert_list["0x10005"]["msg"], 5000);
+                                    return;
+                                }
+                                showMessage(alert_list["0x10008"]["mode"],
+                                            alert_list["0x10008"]["title"],
+                                            alert_list["0x10008"]["msg"], 5000);
+                            }
+                        });
+                    }
+
+                },
+
+                // *************** On Previous Page *************** //
+                onClickPrevious: function() {
+                    if (this.cur_page <= 1)
+                        return;
+                    this.cur_page--;
+                    get_page_users();
+                },
+
+                // *************** On Next Page *************** //
+                onClickNext: function() {
+                    if (this.cur_page >= this.total_page)
+                        return;
+                    this.cur_page++;
+                    get_page_users();
+                }
+            },
+
+            watch: {
+                filter_name: function(cur_val, pre_val) {
+                    this.cur_page = 1;
+                    get_page_users();
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
