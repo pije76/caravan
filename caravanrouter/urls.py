@@ -14,11 +14,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, re_path
-from django.conf.urls import include
+#from django.urls import path, re_path
+from django.conf.urls import url, include
+
+from home.views import indexView
 
 urlpatterns = [
-    path("", include("caravanrouter.dashboards.home.urls")),
-    path("admin/", include("caravanrouter.dashboards.adminpanel.urls")),
-    path("user/", include("caravanrouter.dashboards.userpanel.urls")),
+    url(r'', include("home.urls")),
+#    url(r'^$', indexView, name="indexView"),
+    url(r'^admin/', include("adminpanel.urls")),
+    url('user/', include("userpanel.urls")),
 ]

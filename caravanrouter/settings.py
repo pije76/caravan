@@ -37,7 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'caravanrouter.database',
+
+    'home',
+    'database',
+    'adminpanel',
+    'userpanel',
+    'module',
 ]
 
 MIDDLEWARE = [
@@ -54,15 +59,14 @@ ROOT_URLCONF = 'caravanrouter.urls'
 
 LOGIN_URL = '/login'
 
-AUTH_USER_MODEL = 'database.tbl_user'
+AUTH_USER_MODEL = 'database.TblUser'
 
 SESSION_COOKIE_AGE = 3600 * 3
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,19 +85,20 @@ STATICFILES_DIRS = [
 
 WSGI_APPLICATION = 'caravanrouter.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'HOST': 'localhost',
-        'NAME': 'caravan',
+        'NAME': 'kane_caravanrouter',
         'ENGINE': 'django.db.backends.mysql',
-#        'ENGINE': 'django.db.backends.sqlite3',
-        'USER': 'pije76',
-        'PASSWORD': 'tratap60',
-        'PORT': '3306',
+        'USER': 'kane_caravan',
+        'PASSWORD': 'Tratap60',
+	    'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
@@ -134,3 +139,41 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+)
+STATIC_ROOT = os.path.join(BASE_DIR, "uploads")
+
+INTERNAL_IPS = ('127.0.0.1',)
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT  = os.path.join(os.path.dirname(BASE_DIR), "media")
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/home/kane/public_html/caravanrouter/debug.log',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    }
+}

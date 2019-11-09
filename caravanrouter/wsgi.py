@@ -7,7 +7,11 @@ For more information on this file, see
 https://docs.djangoproject.com/en/2.2/howto/deployment/wsgi/
 """
 
-import os
+import os, sys
+
+sys.path.append('/home/kane/public_html/caravanrouter')
+sys.path.append('/home/kane/.virtualenvs/caravanrouter/lib/python2.7/site-packages')
+
 
 from django.core.wsgi import get_wsgi_application
 
